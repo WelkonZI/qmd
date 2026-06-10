@@ -20,13 +20,14 @@
     "skills/",
     "scripts/build.mjs",
     "scripts/check-package-grammars.mjs",
+    "scripts/install-hooks.mjs",
     "scripts/package-smoke.mjs",
     "scripts/test-all.mjs",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "scripts": {
-    "prepare": "[ -d .git ] && ./scripts/install-hooks.sh || true",
+    "prepare": "node scripts/install-hooks.mjs",
     "build": "node scripts/build.mjs",
     "test": "node scripts/test-all.mjs",
     "test:types": "node ./node_modules/typescript/bin/tsc -p tsconfig.build.json --noEmit",

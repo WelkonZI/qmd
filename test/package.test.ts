@@ -5,6 +5,16 @@ const root = new URL("..", import.meta.url);
 const pkg = JSON.parse(readFileSync(new URL("package.json", root), "utf8"));
 
 describe("package test task", () => {
+  test("prepare script uses a cross-platform node hook installer", () => {
+    expect(pkg.scripts.prepare).toBe("node scripts/install-hooks.mjs");
+    expect(pkg.files, "published package files").toContain("scripts/install-hooks.mjs");
+
+    const installHooksScript = readFileSync(new URL("scripts/install-hooks.mjs", root), "utf8");
+    expect(installHooksScript).toContain("copyFileSync");
+    expect(installHooksScript).toContain("scripts/pre-push");
+    expect(installHooksScript).toContain(".git/hooks");
+  });
+
   test("build script invokes node without a shell so Windows paths with spaces work", () => {
     const buildScript = readFileSync(new URL("scripts/build.mjs", root), "utf8");
 
