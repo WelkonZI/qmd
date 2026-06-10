@@ -9,7 +9,7 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from "vitest";
 import { openDatabase, loadSqliteVec } from "../src/db.js";
 import type { Database } from "../src/db.js";
-import { unlink, mkdtemp, rmdir, writeFile, rm, mkdir, rename } from "node:fs/promises";
+import { unlink, mkdtemp, rmdir, writeFile, rm, mkdir, rename, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import YAML from "yaml";
@@ -1217,6 +1217,34 @@ describe("Path Context", () => {
 // =============================================================================
 
 describe("Collections", () => {
+  test("reindexCollection follows linked directories inside a collection", async () => {
+    const store = await createTestStore();
+    const collectionRoot = await mkdtemp(join(testDir, "linked-collection-"));
+    const linkedTarget = await mkdtemp(join(testDir, "linked-target-"));
+    const linkedPath = join(collectionRoot, "linked");
+
+    try {
+      await writeFile(join(collectionRoot, "root.md"), "# Root\n\nRoot document.");
+      await writeFile(join(linkedTarget, "linked.md"), "# Linked\n\nLinked document.");
+      await symlink(linkedTarget, linkedPath, process.platform === "win32" ? "junction" : "dir");
+
+      const result = await reindexCollection(store, collectionRoot, "**/*.md", "linked-test");
+
+      const rows = store.db.prepare(`
+        SELECT path FROM documents
+        WHERE collection = ? AND active = 1
+        ORDER BY path
+      `).all("linked-test") as { path: string }[];
+
+      expect(result.indexed).toBe(2);
+      expect(rows.map(row => row.path)).toEqual(["linked/linked.md", "root.md"]);
+    } finally {
+      await cleanupTestDb(store);
+      await rm(collectionRoot, { recursive: true, force: true });
+      await rm(linkedTarget, { recursive: true, force: true });
+    }
+  });
+
   test("collections are managed via YAML config", async () => {
     const store = await createTestStore();
     const collectionName = await createTestCollection({ pwd: "/home/user/projects/myapp", glob: "**/*.md" });

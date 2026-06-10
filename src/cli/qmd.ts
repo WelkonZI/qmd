@@ -1800,7 +1800,7 @@ async function indexFiles(pwd?: string, globPattern: string = DEFAULT_GLOB, coll
   const allFiles: string[] = await fastGlob(globPattern, {
     cwd: resolvedPwd,
     onlyFiles: true,
-    followSymbolicLinks: false,
+    followSymbolicLinks: true,
     dot: false,
     ignore: allIgnore,
   });

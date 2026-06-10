@@ -1290,7 +1290,7 @@ export async function reindexCollection(
   const allFiles: string[] = await fastGlob(globPattern, {
     cwd: collectionPath,
     onlyFiles: true,
-    followSymbolicLinks: false,
+    followSymbolicLinks: true,
     dot: false,
     ignore: allIgnore,
   });

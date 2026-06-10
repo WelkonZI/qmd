@@ -23,6 +23,9 @@
 
 ### Fixed
 
+- Collection indexing now follows directory symlinks/junctions, so markdown
+  files mounted into a collection via linked directories are indexed.
+
 - MCP server instructions now tell agents to scope with the plural `collections`
   parameter (matching the schema). The previous singular `collection` hint led
   agents to pass a parameter that Zod silently strips, producing unscoped results.
